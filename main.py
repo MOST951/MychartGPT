@@ -1,5 +1,5 @@
 import streamlit as st
-from chat import render_chat, handle_chat_input, get_ai_response
+from chat import render_chat
 from document_qa import render_document_qa
 from data_analysis import render_data_analysis
 
@@ -8,15 +8,6 @@ def render_sidebar():
     """渲染侧边栏"""
     with st.sidebar:
         st.title("⚙️ 控制面板")
-
-        # API密钥输入
-        st.subheader("API密钥设置")
-        st.session_state.API_KEY = st.text_input(
-            "OpenAI API密钥",
-            type="password",
-            help="从OpenAI平台获取您的API密钥",
-            value=st.session_state.get("API_KEY", "")
-        )
 
         # 模型配置
         st.subheader("模型设置")
@@ -52,9 +43,8 @@ def render_sidebar():
 
         # 历史消息
         st.subheader("对话历史")
-
         if st.button("🗑️ 清空当前历史"):
-            pass
+            st.session_state.chat_messages = [{'role': 'ai', 'content': '你好！我是您的智能助手，请问有什么可以帮您？'}]
 
 
 def main():
@@ -65,9 +55,9 @@ def main():
     if 'chat_messages' not in st.session_state:
         st.session_state.chat_messages = [{'role': 'ai', 'content': '你好！我是您的智能助手，请问有什么可以帮您？'}]
     if 'chat_memory' not in st.session_state:
-        st.session_state.chat_memory = None
+        st.session_state.chat_memory = ConversationBufferMemory()
     if 'rag_memory' not in st.session_state:
-        st.session_state.rag_memory = None
+        st.session_state.rag_memory = ConversationBufferMemory()
     if 'session_id' not in st.session_state:
         st.session_state.session_id = None
     if 'rag_db' not in st.session_state:
@@ -78,8 +68,15 @@ def main():
         st.session_state.data_memory = None
     if 'data_df' not in st.session_state:
         st.session_state.data_df = None
+
+    # 从Secrets获取API_KEY
     if 'API_KEY' not in st.session_state:
-        st.session_state.API_KEY = ""
+        try:
+            # 尝试从Streamlit Secrets获取API密钥
+            st.session_state.API_KEY = st.secrets["OPENAI_API_KEY"]
+        except (KeyError, FileNotFoundError):
+            st.error("❌ 未找到API密钥配置，请在Secrets中设置OPENAI_API_KEY")
+            st.session_state.API_KEY = ""
 
     # 页面标题
     st.markdown("""

@@ -14,6 +14,11 @@ def render_document_qa():
     question = st.text_input("请输入您的问题", key="doc_question")
 
     if question and st.session_state.get('session_id'):
+        # 检查API密钥是否有效
+        if not st.session_state.API_KEY:
+            st.warning("请检查API密钥配置是否正确")
+            return
+
         with st.spinner('正在分析文档...'):
             try:
                 if st.session_state.is_new_file:
@@ -36,7 +41,6 @@ def render_document_qa():
                 model = ChatOpenAI(
                     model=st.session_state.selected_model,
                     api_key=st.session_state.API_KEY,
-                    base_url='https://api.openai-hk.com/v1',
                     temperature=0.2
                 )
 

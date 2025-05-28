@@ -3,7 +3,6 @@ import streamlit as st
 from langchain_openai import ChatOpenAI
 from langchain_experimental.agents.agent_toolkits import create_pandas_dataframe_agent
 
-
 PROMPT_TEMPLATE = """
 你是一位数据分析助手，你的回应内容取决于用户的请求内容。
 
@@ -46,6 +45,11 @@ def dataframe_agent(df, query):
         分析结果的字典
     """
     try:
+        # 检查API密钥是否有效
+        if not st.session_state.API_KEY:
+            st.warning("请检查API密钥配置是否正确")
+            return {}
+
         model = ChatOpenAI(
             model="deepseek-chat",
             api_key=st.session_state.API_KEY,
@@ -64,5 +68,5 @@ def dataframe_agent(df, query):
         response = agent.invoke({"input": prompt})
         return json.loads(response["output"])
     except Exception as e:
-        st.warning(f"请求处理失败，请检查链接的合法性或稍后再试。错误信息：{str(e)}")
+        st.warning(f"请求处理失败，请检查API密钥或网络连接。错误信息：{str(e)}")
         return {}

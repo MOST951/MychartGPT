@@ -1,4 +1,6 @@
 import streamlit as st
+from langchain.memory import ConversationBufferMemory
+
 from chat import render_chat
 from document_qa import render_document_qa
 from data_analysis import render_data_analysis
